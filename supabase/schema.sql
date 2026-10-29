@@ -91,3 +91,6 @@ create policy "Users can update their own creative files" on storage.objects
   for update to authenticated using (bucket_id = 'creative-assets' and (storage.foldername(name))[1] = auth.uid()::text) with check (bucket_id = 'creative-assets' and (storage.foldername(name))[1] = auth.uid()::text);
 create policy "Users can delete their own creative files" on storage.objects
   for delete to authenticated using (bucket_id = 'creative-assets' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- Browser client permissions for the RLS-protected asset metadata table.
+grant select, insert, update, delete on table public.content_assets to authenticated;
