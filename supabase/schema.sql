@@ -77,3 +77,17 @@ create policy "owners manage own preferences" on public.user_preferences
 -- Do not let the browser set approved_version / approved_by / approved_at directly.
 -- Move approval transitions to a server-only function after verifying identity and
 -- current version, and invalidate approval whenever any publishable content changes.
+
+-- Private bucket for AI-generated and uploaded creative assets.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('creative-assets', 'creative-assets', false, 10485760, array['image/png','image/jpeg','image/webp'])
+on conflict (id) do update set public = false, file_size_limit = 10485760, allowed_mime_types = array['image/png','image/jpeg','image/webp'];
+
+create policy "Users can view their own creative files" on storage.objects
+  for select to authenticated using (bucket_id = 'creative-assets' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "Users can upload their own creative files" on storage.objects
+  for insert to authenticated with check (bucket_id = 'creative-assets' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "Users can update their own creative files" on storage.objects
+  for update to authenticated using (bucket_id = 'creative-assets' and (storage.foldername(name))[1] = auth.uid()::text) with check (bucket_id = 'creative-assets' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "Users can delete their own creative files" on storage.objects
+  for delete to authenticated using (bucket_id = 'creative-assets' and (storage.foldername(name))[1] = auth.uid()::text);
