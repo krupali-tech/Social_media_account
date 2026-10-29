@@ -36,8 +36,8 @@ export default function Home(){
   setItemsLoading(false);
  }
  useEffect(()=>{let alive=true;
-  supabase.auth.getSession().then(({data})=>{if(!alive)return;setUser(data.session?.user??null);setAuthLoading(false);if(data.session?.user)void loadItems(data.session.user.id);});
-  const {data:{subscription}}=supabase.auth.onAuthStateChange((_event,session)=>{if(!alive)return;setUser(session?.user??null);if(session?.user)void loadItems(session.user.id);else setItems([]);setAuthLoading(false);});
+  supabase.auth.getSession().then((result: { data: { session: { user: any } | null } })=>{const data=result.data;if(!alive)return;setUser(data.session?.user??null);setAuthLoading(false);if(data.session?.user)void loadItems(data.session.user.id);});
+  const {data:{subscription}}=supabase.auth.onAuthStateChange((_event: string,session: { user: any } | null)=>{if(!alive)return;setUser(session?.user??null);if(session?.user)void loadItems(session.user.id);else setItems([]);setAuthLoading(false);});
   return ()=>{alive=false;subscription.unsubscribe();};
  },[supabase]);
  async function submitAuth(e:React.FormEvent){e.preventDefault();setToast("");if(authMode==="signup"){const {error}=await supabase.auth.signUp({email:authEmail,password:authPassword});if(error)notice(error.message);else notice("Account created. Check your email if confirmation is enabled, then sign in.");}else{const {error}=await supabase.auth.signInWithPassword({email:authEmail,password:authPassword});if(error)notice(error.message);}}
